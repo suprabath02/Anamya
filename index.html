@@ -360,7 +360,9 @@ elseInput.addEventListener('keydown', e => { if (e.key === 'Enter') chooseElse()
 
 /* ---------- open the invitation ---------- */
 const overlay = document.getElementById('overlay');
+let currentMovie = "";          // the movie showing on the card right now
 function openInvite(title) {
+  currentMovie = title;
   document.getElementById('chosenTitle').textContent = title;
   document.getElementById('dWhen').textContent  = CONFIG.when;
   document.getElementById('dWhere').textContent = CONFIG.where;
@@ -377,7 +379,31 @@ document.getElementById('rsvpBtn').addEventListener('click', () => {
   const r = CONFIG.rsvpReplies[Math.floor(Math.random() * CONFIG.rsvpReplies.length)];
   document.getElementById('yay').textContent = r;
   flutter(14);
+  notifyRSVP(currentMovie);
 });
+
+/* =====================================================================
+   EMAIL NOTIFICATION — on every "Count me in" click, silently POST to
+   Web3Forms, which emails suprabath02@gmail.com. Includes the movie she
+   chose (or typed). Fires every click; failures are ignored so the cute
+   page never shows an error.
+   ===================================================================== */
+function notifyRSVP(movie){
+  try {
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        access_key: 'f2f5a259-b022-412e-8a83-01fa120ae0ce',
+        subject: 'Anamya said YES! 💚',
+        from_name: 'Anamya',
+        who: 'Anamya',
+        movie: movie || '(no movie selected)',
+        message: 'Anamya clicked "Count me in" — movie chosen: ' + (movie || '(none)')
+      })
+    }).catch(()=>{});
+  } catch(e){ /* ignore */ }
+}
 
 document.getElementById('closeX').addEventListener('click', () => overlay.classList.remove('show'));
 overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
